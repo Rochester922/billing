@@ -137,6 +137,12 @@
               Users
             </a>
           </li>
+          <li class=" <?=($active_uri == 'deductions') ? 'active ' : '';?>">
+            <a href="<?php echo site_url('admin/deductions/index'); ?>" >
+              <i class="icon-sort-amount-asc position-left"></i>
+              Credit Deductions
+            </a>
+          </li>
           <li class="<?=($active_uri == 'message') ? 'active ' : '';?>">
             <a href="<?php echo site_url('admin/message'); ?>" >
               <i class="icon-envelope position-left"></i>

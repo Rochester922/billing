@@ -7,6 +7,8 @@ class Users extends AdminController {
     public function __construct() {
         parent::__construct();
         $this->load->model('dashboard_model');
+        $this->load->model('deduction_model');
+        $this->load->helper('deduction_helper');
     }
 
     public function index() {
@@ -44,6 +46,7 @@ class Users extends AdminController {
         $this->data['title']     = 'Add ' . $this->module_name;
         $this->data['module']    = $this->module_name;
         $this->data['resellers'] = $this->reseller_model->get_all();
+        $this->data['deduction'] = arrayDataCreditDeduction();
         $this->form_validation->set_rules('name', 'Name', 'trim|alpha_numeric_spaces');
         $this->form_validation->set_rules('username', 'Username', 'trim|strtolower|alpha_numeric|required|valid_login');
         $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[4]|max_length[100]');
@@ -419,7 +422,6 @@ class Users extends AdminController {
             }
         }
     }
-    
 }
 /* End of file Users.php */
 /* Location: ./application/modules/admin/controllers/Users.php */

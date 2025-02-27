@@ -8,6 +8,7 @@ class Users_model extends CI_Model {
     public function __construct() {
         parent::__construct();
         $this->stb = $this->load->database('stalker', true);
+        $this->load->helper('deduction_helper');
     }
 
     public function get_user($account) {
@@ -73,6 +74,9 @@ class Users_model extends CI_Model {
                         $this->db->insert('free_trial_users', $free_trial_data);                         
                         // todo: check for errors
                     } else {
+                        $arrayDeductions = arrayDataCreditDeduction();
+                        $options['validity'] = $arrayDeductions[$options['validity']] ?? $options['validity'];
+
                         $this->transaction_model->add($options['validity'], "DBIT", $options['username'], $options['account']); // Debit credits from dealer or reseller account
                         // todo: check for errors
                     }
