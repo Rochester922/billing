@@ -66,9 +66,20 @@
               <div class="col-md-3">
                 <select name="validity" class="form-control">
                   <option value="FREE_TRIAL" >Free trial</option>
-                  <option value="1" selected="selected">1 Month</option>
-                  <?php for($i=2; $i<=12; $i++){?>
-                  <option value="<?php echo $i;?>" ><?php echo $i;?> Months</option>
+
+                  <?php for($i=1; $i<=12; $i++){?>
+                    <option value="<?php echo $i;?>" <?php if($i==1): echo 'selected="selected"'; endif;?> >
+                      <?php echo $i;?> Months
+
+                      <?php if (isset($deduction[$i]) && $deduction[$i] > 0):?>
+                          (<?php echo $deduction[$i];?>
+                            <?php if ($deduction[$i] > 1):?>
+                              credits)
+                            <?php else:?>
+                              credit)
+                            <?php endif;?>
+                      <?php endif;?>
+                    </option>
                   <?php }?>
                 </select>
                 <?php echo form_error('validity','<span class="help-block">','</span>');?>

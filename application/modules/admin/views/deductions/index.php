@@ -27,13 +27,20 @@
                     <?php echo form_open('admin/deductions/index', array('class' => 'form-horizontal', 'id' => 'form_sample_3')); ?>
                     <div class="form-body">
                         <?php for ($i = 0; $i < count($deductions); $i++): ?>
-                            <div class="form-group <?= (form_error("month_deduction_{$deductions[$i]->month}")) ? 'has-error' : ''; ?>">
-                                <label for="inputName9" class="control-label col-sm-3">
-                                    <?= $deductions[$i]->month ?> Month
-                                </label>
+                            <div class="form-group <?= (form_error("month_deduction_{$deductions[$i]->id}")) ? 'has-error' : ''; ?>">
                                 <div class="col-sm-3">
-                                    <input type="number" class="form-control" placeholder="1" name="month_deduction_<?= $deductions[$i]->month ?>" value="<?= $deductions[$i]->month_deduction;?>" />
-                                    <?= form_error("month_deduction_{$deductions[$i]->month}", '<span class="help-block">', '</span>'); ?>
+                                    <select name="month_<?= $deductions[$i]->id ?>" class="form-control">
+                                        <?php for ($m = 1; $m <= 12; $m++) { ?>
+                                            <option value="<?php echo $m; ?>" <?php if($m==$deductions[$i]->month): echo 'selected="selected"'; endif;?> >
+                                                <?php echo $m?> Month
+                                            </option>
+                                        <?php } ?>
+                                    </select>
+                                </div>
+
+                                <div class="col-sm-3">
+                                    <input type="number" class="form-control" placeholder="1" name="month_deduction_<?= $deductions[$i]->id ?>" value="<?= $deductions[$i]->month_deduction; ?>" />
+                                    <?= form_error("month_deduction_{$deductions[$i]->id}", '<span class="help-block">', '</span>'); ?>
                                 </div>
                             </div>
                             <!-- /.form-group -->

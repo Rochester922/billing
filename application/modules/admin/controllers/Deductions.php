@@ -18,17 +18,28 @@ class Deductions extends AdminController
 
         $this->data['title'] = 'Manage ' . $this->module_name;
         $this->data['deductions'] = $deductions;
+        $arrayMonth = [];
 
         if (count($deductions) > 0) {
             foreach ($deductions as $value) {
-                $this->form_validation->set_rules("month_deduction_{$value->month}", 'credit deduction', 'required|integer');
+                $this->form_validation->set_rules("month_{$value->id}", 'month', 'required');
+                $this->form_validation->set_rules("month_deduction_{$value->id}", 'credit deduction', 'required|integer');
+
+                // Validate unique month
+                if (isset($arrayMonth[$this->input->post("month_{$value->id}")])) {
+                    $this->msg('Updated credit deductions failed due to overlapping months!', 'danger');
+                    redirect('admin/deductions/index', 'refresh');
+                }
+
+                $arrayMonth[$this->input->post("month_{$value->id}")] = $this->input->post("month_{$value->id}");
             }
         }
 
         if ($this->form_validation->run() == true) {
             foreach ($deductions as $value) {
                 $data = [
-                    'month_deduction' => $this->input->post("month_deduction_{$value->month}")
+                    'month' => $this->input->post("month_{$value->id}"),
+                    'month_deduction' => $this->input->post("month_deduction_{$value->id}")
                 ];
 
                 $this->deduction_model->update($data, $value->id);
@@ -38,6 +49,6 @@ class Deductions extends AdminController
             redirect('admin/deductions/index', 'refresh');
         } else {
             $this->render('deductions/index');
-        }  
+        }
     }
 }

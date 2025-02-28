@@ -6,6 +6,7 @@ class Users extends ResellerController {
 
     public function __construct() {
         parent::__construct();
+        $this->load->helper('deduction_helper');
     }
 
     public function index() {
@@ -42,6 +43,7 @@ class Users extends ResellerController {
         $this->data['title'] = 'Add ' . $this->module_name;
         $this->data['module'] = $this->module_name;
         $this->data['resellers'] = $this->reseller_model->get_all();
+        $this->data['deduction'] = arrayDataCreditDeduction();
         $this->form_validation->set_rules('name', 'Name', 'trim|alpha_numeric_spaces');
         $this->form_validation->set_rules('username', 'Username', 'trim|strtolower|alpha_numeric|required|valid_login');
         $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[4]|max_length[100]');

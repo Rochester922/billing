@@ -7,7 +7,6 @@ class Users extends AdminController {
     public function __construct() {
         parent::__construct();
         $this->load->model('dashboard_model');
-        $this->load->model('deduction_model');
         $this->load->helper('deduction_helper');
     }
 
