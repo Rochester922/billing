@@ -24,4 +24,14 @@ class Deduction_model extends CI_Model
         $this->db->where('id', $id);
         return $this->db->update($this->table, $data);
     }
+
+    public function create($data) 
+    {
+        return $this->db->insert($this->table, $data);
+    }
+
+    public function delete_all()
+    {
+        return $this->db->truncate($this->table);
+    }
 }

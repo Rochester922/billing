@@ -36,13 +36,17 @@ class Deductions extends AdminController
         }
 
         if ($this->form_validation->run() == true) {
-            foreach ($deductions as $value) {
-                $data = [
-                    'month' => $this->input->post("month_{$value->id}"),
-                    'month_deduction' => $this->input->post("month_deduction_{$value->id}")
-                ];
+            // Remmove all deduction
+            $this->deduction_model->delete_all();
 
-                $this->deduction_model->update($data, $value->id);
+            foreach ($deductions as $value) {
+                // Insert deduction
+                $this->deduction_model->create([
+                    'month' => $this->input->post("month_{$value->id}"),
+                    'month_deduction' => $this->input->post("month_deduction_{$value->id}"),
+                    'created_at' => date('Y-m-d H:i:s'),
+                    'updated_at' => date('Y-m-d H:i:s')
+                ]);
             }
 
             $this->msg('Credit deductions was updated successfully!');
