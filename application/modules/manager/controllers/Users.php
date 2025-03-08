@@ -21,7 +21,7 @@ class Users extends ManagerController {
 
 		$sql_expired = $this->manager_model->get_all_users_expired($this->user['username']);
 		$this->data['sql_expired'] = $sql_expired;
-
+        $this->data['query'] = $query;
 		$this->render('users/index');
     }
 
@@ -156,6 +156,107 @@ class Users extends ManagerController {
         }
     }
 
+    public function renewOneMonth($username = NULL)
+    {
+        $users = $this->users_model->get_user($username);
+        if (empty($username) || $users->num_rows() == 0) {
+            show_404();
+            exit();
+        }
+
+        $this->form_validation->set_rules('validity', 'Validity', 'trim|required|callback_check_validity');
+
+        // Param query
+        $query = $this->input->post('query');
+        $credits = $this->input->post('validity');
+
+        if ($this->form_validation->run() == TRUE) {
+            if ($this->users_model->renew($username, $credits) === true) {
+                log_debug_msg("admin/controllers/users.php/renew(): $credits months successfully added to user $username");
+                $this->msg('Renewal successfully!');
+            } else {
+                log_debug_msg("admin/controllers/users.php/renew(): there was an error while trying to add $credits months to user $username");
+                $this->msg('Error Occured, Please try again later', 'danger');
+            }
+        } else {
+            $validity_error = form_error('validity');
+
+            $this->msg($validity_error, 'danger');
+        }
+        
+        redirect('manager/users'.(!empty($query) ? '?query=' . $query : ''), 'refresh');
+    }
+
+    private function check_validity_format($validity, $callback_name) {
+        if ($validity === 'FREE_TRIAL') { 
+            return TRUE;
+        }
+
+        if (is_numeric($validity)) {
+            $validity = intval($validity);
+        } else {
+            $this->form_validation->set_message($callback_name, "The specified option is not valid");
+            return FALSE;
+        }
+
+        if ($validity < 1 or $validity > 24) {
+            $this->form_validation->set_message($callback_name, "The specified period is not valid");
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    private function check_validity_credits($validity, $callback_name) {
+        if ($validity === 'FREE_TRIAL') { 
+            return TRUE;
+        }
+
+        $dealer = $this->input->post('dealer');
+        $reseller = $this->input->post('reseller');
+        $username = (empty($dealer)) ? $reseller : $dealer;
+        $remain_credits = $this->transaction_model->get_credit_balance($username);
+        if ($remain_credits < $validity) {
+            $this->form_validation->set_message($callback_name, $username . " don't have enough credits to create account!");
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    private function check_validity_free_trial($validity, $callback_name) {
+        if ($validity !== 'FREE_TRIAL') { 
+            return TRUE;
+        }
+
+        $mac = $this->input->post('mac');
+        $mac_db_data = $this->db->where(array('mac' => $mac))->get('free_trial_users');
+        if ($mac_db_data->num_rows() != 0) {
+            $this->form_validation->set_message($callback_name, "The specified MAC cannot use another free trial");
+            return FALSE;
+        }
+
+        return TRUE;
+    }
+
+    public function check_validity($validity) {
+
+        $callback_name = 'check_validity';
+
+        if (!$this->check_validity_format($validity, $callback_name)) {
+            return FALSE;
+        }
+
+        if (!$this->check_validity_credits($validity, $callback_name)) {
+            return FALSE;
+        }
+
+        if (!$this->check_validity_free_trial($validity, $callback_name)) {
+            return FALSE;
+        }
+
+        return TRUE;
+    }
 }
 /* End of file Users.php */
 /* Location: ./application/modules/admin/controllers/Users.php */

@@ -200,7 +200,7 @@ $msg_type  = $this->session->flashdata('msg_type');?>
   <?php $alert_icon  = ($msg_type == 'danger') ? 'icon-warning22' : 'icon-checkmark3';?>
   new PNotify({
   title: '<?=$alert_title;?>',
-  text: '<?php echo $flash_msg; ?>',
+  text: "<?php echo $flash_msg; ?>",
   icon: '<?php echo $alert_icon; ?>',
   type: '<?php echo $alert_type; ?>'
   });

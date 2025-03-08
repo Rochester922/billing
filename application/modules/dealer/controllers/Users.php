@@ -35,6 +35,7 @@ class Users extends DealerController {
             $sql = $this->db->get('accounts');
         }
         $this->data['sql'] = $sql;
+        $this->data['query'] = $query;
         // echo   $this->db->last_query(); exit;
         $this->render('users/index');
     }
@@ -94,6 +95,8 @@ class Users extends DealerController {
         $this->data['module'] = $this->module_name;
         $this->data['row'] = $users->row();
         $this->data['stalker'] = $this->users_model->get_stalker_user($username);
+        $this->data['deduction'] = arrayDataCreditDeduction();
+        $this->data['type']      = null;
         $this->form_validation->set_rules('name', 'Name', 'trim|alpha_numeric_spaces');
         $this->form_validation->set_rules('password', 'Password', 'trim|required|min_length[4]|max_length[100]');
         $this->form_validation->set_rules('mac', 'MAC', 'trim|strtoupper|valid_mac|callback_check_edited_mac[' . $username . ',' . $current_mac_address . ']');        
@@ -142,7 +145,7 @@ class Users extends DealerController {
             return FALSE;
         }
 
-        if ($validity < 1 or $validity > 12) {
+        if ($validity < 1 or $validity > 24) {
             $this->form_validation->set_message($callback_name, "The specified period is not valid");
             return FALSE;
         }
@@ -233,15 +236,32 @@ class Users extends DealerController {
             exit();
         }
 
+        // Before update user_credit_summarize
+        $this->creditsummarize_model->before_update($username);
+
+        $type    = $this->input->post('type');
+
         $this->data['title']  = 'Renew ' . $this->module_name;
         $this->data['module'] = $this->module_name;
         $this->data['row']    = $users->row();
         $this->data['sql']    = $this->users_model->get_transactions($username);
+        $this->data['deduction'] = arrayDataCreditDeduction();
+        $this->data['type'] = $type;
 
-        $this->form_validation->set_rules('credits', 'Credits', 'trim|required|numeric|max_length[2]|callback_check_renew_validity');
+        if (!is_null($type) && $type == "RENEW") {
+            $this->form_validation->set_rules('validity', 'Validity', 'trim|required|callback_check_validity');
+        } else {
+            $this->form_validation->set_rules('credits', 'Credits', 'trim|required|numeric|max_length[2]|callback_check_renew_validity');
+        }
+
         if ($this->form_validation->run() === true) {
             $credits = $this->input->post('credits');
-            $type    = $this->input->post('type');
+            $validity = $this->input->post('validity');
+
+            if ($type == "RENEW") {
+                $credits = $validity;
+            }
+            
             if ($type == "RCDT") {
                 log_debug_msg("dealer/controllers/users.php/renew(): trying to recover credits from user $username");
                 if ($this->users_model->recover_credits($username, $credits) === true) {
@@ -295,6 +315,7 @@ class Users extends DealerController {
     public function message($login = NULL) {
         $this->data['title']  = "Send Message to User";
         $this->data['module'] = "Send Mesage to User";
+        $this->data['type'] = null;
         $sql                  = $this->db->where(array('account' => $login, 'username' => $this->user['username']))->get('accounts');
         if ($sql->num_rows() == 0 || empty($login)) {
             show_404();
@@ -346,7 +367,40 @@ class Users extends DealerController {
             redirect('dealer/users', 'refresh');
         }
     }
- 
+    
+    public function renewOneMonth($username = NULL)
+    {
+        $users = $this->users_model->get_user($username);
+        if (empty($username) || $users->num_rows() == 0) {
+            show_404();
+            exit();
+        }
+
+        // Before update user_credit_summarize
+        $this->creditsummarize_model->before_update($username);
+
+        $this->form_validation->set_rules('validity', 'Validity', 'trim|required|callback_check_validity');
+
+        // Param query
+        $query = $this->input->post('query');
+        $credits = $this->input->post('validity');
+
+        if ($this->form_validation->run() == TRUE) {
+            if ($this->users_model->renew($username, $credits) === true) {
+                log_debug_msg("admin/controllers/users.php/renew(): $credits months successfully added to user $username");
+                $this->msg('Renewal successfully!');
+            } else {
+                log_debug_msg("admin/controllers/users.php/renew(): there was an error while trying to add $credits months to user $username");
+                $this->msg('Error Occured, Please try again later', 'danger');
+            }
+        } else {
+            $validity_error = form_error('validity');
+
+            $this->msg($validity_error, 'danger');
+        }
+        
+        redirect('dealer/users'.(!empty($query) ? '?query=' . $query : ''), 'refresh');
+    }
 }
 /* End of file Users.php */
 /* Location: ./application/modules/dealer/controllers/Users.php */

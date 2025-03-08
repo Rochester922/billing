@@ -15,8 +15,8 @@ function arrayDataCreditDeduction()
         $start = $deductions[$key]->month;
         $end = $deductions[$key + 1]->month ?? null;
 
-        if ($key + 1 == count($deductions) && $value->month < 12) {
-            $end = 12;
+        if ($key + 1 == count($deductions) && $value->month < 24) {
+            $end = 24;
         }
 
         if (!is_null($end) && $end) {

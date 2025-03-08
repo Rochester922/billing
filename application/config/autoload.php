@@ -134,6 +134,6 @@ $autoload['language'] = array();
  */
 
 $autoload['model'] = array('login/auth_model' => 'auth', 'admin/transaction_model', 'admin/reseller_model', 'admin/users_model', 'admin/stalker_model', 
-    'admin/dealer_model', 'admin/manager_model');
+    'admin/dealer_model', 'admin/manager_model', 'admin/creditsummarize_model');
     
 

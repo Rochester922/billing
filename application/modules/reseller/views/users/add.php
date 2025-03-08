@@ -67,17 +67,13 @@
                 <select name="validity" class="form-control">
                   <option value="FREE_TRIAL" >Free trial</option>
 
-                  <?php for($i=1; $i<=12; $i++){?>
+                  <?php for($i=1; $i<=24; $i++){?>
                     <option value="<?php echo $i;?>" <?php if($i==1): echo 'selected="selected"'; endif;?> >
                       <?php echo $i;?> Months
 
                       <?php if (isset($deduction[$i]) && $deduction[$i] > 0):?>
-                          (<?php echo $deduction[$i];?>
-                            <?php if ($deduction[$i] > 1):?>
-                              credits)
-                            <?php else:?>
-                              credit)
-                            <?php endif;?>
+                        (<?php echo $deduction[$i] > 1 ? $deduction[$i] . ' credits used,': $i - $deduction[$i] . ' credit used,';?>
+                        <?php echo $i - $deduction[$i] > 1 ? $i - $deduction[$i] . ' months': $i - $deduction[$i] . ' month';?> bonus credit)
                       <?php endif;?>
                     </option>
                   <?php }?>

@@ -65,7 +65,19 @@
                 <td><a href="<?= site_url('dealer/users/edit/'.$row->account); ?>"><?=$row->full_name;?></a></td>
                 <td><?=$row->password;?></td>
                 <td class="text-center"><?= ($row->status == 0) ? '<span class="label label-sm label-success block">Active</span>' : '<span class="label label-sm label-danger block">INACTIVE</span>';?></td>
-                <td class="text-center"><?=$this->stalker_model->expiry_date($row->expires);?></td>
+                <td class="text-center">
+                  <?=$this->stalker_model->expiry_date($row->expires);?>
+
+                  <a href="javascript:void(0)" onclick="add1Month(this, '<?=$row->account;?>')" class="label label-sm label-primary">+1</a>
+
+                  <?php echo form_open('dealer/users/renewOneMonth/'.$row->account,array('class'=>'form-horizontal'));?>
+                    <input type="hidden" name="query" value="<?= $query;?>">
+                    <input type="hidden" name="validity" value="1">
+                    <input type="hidden" name="reseller" value="<?=get_reseller($row->username, 'SRSLR');?>">
+                    <input type="hidden" name="dealer" value="<?=get_dealer($row->username, 'RSLR');?>">
+                    <button type="submit" class="label label-sm label-primary" style="display: none;"></button>
+                  </form>
+                </td>
                 <td class="text-center">
                   <?=user_action_buttons($row->account, 'dealer');?>
                 </td>
@@ -84,3 +96,20 @@
 
   </div>
   <!-- /page container -->
+  <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+  <script>
+    function add1Month(element, account) {
+      Swal.fire({
+        title: `Please confirm renew of account ${account} for a month?`,
+        showCancelButton: true,
+        confirmButtonText: "OK",
+      }).then((result) => {
+        if (result.isConfirmed) {
+          let form = element.closest('a').nextElementSibling;
+          if (form && form.tagName.toLowerCase() === 'form') {
+            form.submit(); // Submit form
+          }
+        }
+      });
+    }
+  </script>

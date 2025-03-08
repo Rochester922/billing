@@ -223,7 +223,9 @@
                     </div>
                     <div class="panel-body">
                         <?= form_open('admin/users/renew/'.$row->account,array('class'=>'form-horizontal'));?>
-                        <div class="form-group <?php if(form_error('credits')): echo 'has-error'; endif; ?>">
+                        <input type="hidden" name="reseller" value="<?=get_reseller($row->username, 'SRSLR');?>">
+                        <input type="hidden" name="dealer" value="<?=get_dealer($row->username, 'RSLR');?>">
+                        <div class="form-group <?php if(form_error('credits')): echo 'has-error'; endif; ?> form-credit" style="display:<?php echo $type != "RENEW" || is_null($type)  ? 'block': 'none';?>">
                             <label class="control-label col-md-5">Select Credits</label>
                             <div class="col-md-3">
                                 <select class="form-control" name="credits">
@@ -236,20 +238,47 @@
                                 <?php echo form_error('credits', '<span class="help-block">', '</span>'); ?>
                             </div>
                         </div>
+                        <div class="form-group <?php if(form_error('validity')): echo 'has-error'; endif; ?> form-validity" style="display:<?php echo $type == "RENEW" ? 'block': 'none';?>;">
+                            <label class="col-md-5 control-label">Validity</label>
+                            <div class="col-md-3">
+                              <select name="validity" class="form-control">
+                                <option value="FREE_TRIAL" >Free trial</option>
+
+                                <?php for ($i = 1; $i <= 24; $i++) {?>
+                                  <option value="<?php echo $i;?>" <?php if($i==1): echo 'selected="selected"'; endif;?> >
+                                    <?php echo $i;?> Months
+                                
+                                    <?php if (isset($deduction[$i]) && $deduction[$i] > 0):?>
+                                      (<?php echo $deduction[$i] > 1 ? $deduction[$i] . ' credits used,': $i - $deduction[$i] . ' credit used,';?>
+                                      <?php echo $i - $deduction[$i] > 1 ? $i - $deduction[$i] . ' months': $i - $deduction[$i] . ' month';?> bonus credit)
+                                    <?php endif;?>
+                                  </option>
+                                <?php }?>
+                                    
+                              </select>
+                              <?php echo form_error('validity','<span class="help-block">','</span>');?>
+                            </div>
+                        </div>
                         <div class="form-group">
                             <label class="col-md-5 control-label">Type</label>
                             <div class="col-md-6">
-                                
                                 <div class="radio">
                                     <label>
-                                        <input type="radio" name="type" class="styled" checked="checked" value="CRDT">
+                                        <input type="radio" name="type" class="styled" 
+                                            <?php echo $type == "CRDT" || is_null($type) ? 'checked': '';?> value="CRDT">
                                         ADD
                                     </label>
                                 </div>
                                 <div class="radio">
                                     <label>
-                                        <input type="radio" name="type" class="styled" value="RCDT">
+                                        <input type="radio" name="type" class="styled" <?php echo $type == "RCDT" ? 'checked': '';?> value="RCDT">
                                         RECOVER
+                                    </label>
+                                </div>
+                                <div class="radio">
+                                    <label>
+                                        <input type="radio" name="type" class="styled" <?php echo $type == "RENEW" ? 'checked': '';?> value="RENEW">
+                                        RENEWAL
                                     </label>
                                 </div>
                             </div>
@@ -321,6 +350,7 @@
                                 <th> Sub-account </th>
                                 <th> Coverage Start </th>
                                 <th> Coverage End </th>
+                                <th> Remarks </th>
                                 <th> Date / Time </th>
                             </tr>
                         </thead>
@@ -331,11 +361,20 @@
                             <?php $total_credits +=$trans->periods; ?>
                             <tr class="odd gradeX">
                                 <td><?= (str_pad($trans->transaction, 8, "0", STR_PAD_LEFT));?></td>
-                                <td><?= ($trans->type=='DBIT') ? '<span class="label label-sm label-success green block">PURCHASED</span>':'<span class="label label-sm label-danger block">USED</span>' ;?></td>
+                                <td>
+                                    <?php if ($trans->type=='DBIT'): ?>
+                                        <span class="label label-sm label-success green block">PURCHASED</span>
+                                    <?php elseif ($trans->type=='BONUS'): ?>
+                                        <span class="label label-sm label-primary block">BONUS</span>
+                                    <?php else: ?>
+                                        <span class="label label-sm label-danger block">USED</span>
+                                    <?php endif; ?>
+                                </td>
                                 <td><?= $trans->periods;?></td>
                                 <td><?= (empty($trans->account)) ? '-':$trans->account;?></td>
                                 <td><?= (empty($trans->coverage_start)) ? '-':$trans->coverage_start;?></td>
                                 <td><?= (empty($trans->coverage_end)) ? '-':$trans->coverage_end;?></td>
+                                <td><?=  $trans->remarks; ?></td>
                                 <td><?=  $trans->timestamp; ?></td>
                             </tr>
                             <?php endforeach;?>
@@ -344,6 +383,7 @@
                         <th><?php echo $trans_sql->num_rows(); ?></th>
                         <th>-</th>
                         <th>Total <br> <?php echo $total_credits; ?></th>
+                        <th>-</th>
                         <th>-</th>
                         <th>-</th>
                         <th>-</th>
@@ -370,6 +410,15 @@ $( document ).ready(function() {
         $('#parent_password').animate({backgroundColor: '#F7F7F7'}, 'fast')        
     });
 
+    $('input[name="type"]').click(function () {
+        if ($(this).val() == 'RENEW') {
+            $('.form-validity').css('display', 'block');
+            $('.form-credit').css('display', 'none');
+        } else {
+            $('.form-validity').css('display', 'none');
+            $('.form-credit').css('display', 'block');
+        }
+    });
 });
 
 </script>

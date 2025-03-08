@@ -30,7 +30,7 @@
                             <div class="form-group <?= (form_error("month_deduction_{$deductions[$i]->id}")) ? 'has-error' : ''; ?>">
                                 <div class="col-sm-3">
                                     <select name="month_<?= $deductions[$i]->id ?>" class="form-control">
-                                        <?php for ($m = 1; $m <= 12; $m++) { ?>
+                                        <?php for ($m = 1; $m <= 24; $m++) { ?>
                                             <option value="<?php echo $m; ?>" <?php if($m==$deductions[$i]->month): echo 'selected="selected"'; endif;?> >
                                                 <?php echo $m?> Month
                                             </option>

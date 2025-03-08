@@ -5,13 +5,41 @@ class Transaction_model extends CI_Model {
 
     public function __construct() {
         parent::__construct();
+        $this->load->helper('deduction_helper');
     }
 
-    public function add($credits, $type, $username, $account = null) {
+    public function add($credits, $type, $username, $account = null, $expires = null, $coverageStart = null) {
+        $arrayDeductions = arrayDataCreditDeduction();
+        
+        $remarks = null;
+
         // $type = 'CRDT';
         // $transaction_id = $this->db->query("select max(transaction) + 1 from transactions where username = '" . $username . "'")->row();
         $transaction_id = $this->db->select_max('transaction')->where('username', $username)->get('transactions')->row();
         $transaction    = $transaction_id->transaction + 1;
+
+        if (isset($arrayDeductions[$credits]) && $type != "CRDT" && !is_null($account)) {
+            $numberFree = $credits - $arrayDeductions[$credits];
+            // Handle Insert Transaction Bonus
+            $this->db->insert('transactions', [
+                'username'    => $username,
+                'account'     => $account,
+                'type'        => 'BONUS',
+                "transaction" => (int) $transaction,
+                "periods"     => 0,
+                "timestamp"   => date("Y-m-d H:i:s"),
+                "coverage_start" => $coverageStart,
+                "coverage_end" => $expires,
+                "remarks" => "Credit <strong>From</strong>: $username <strong>To</strong>: $account ($numberFree credits free)"
+            ]);
+
+            $credits = $arrayDeductions[$credits];
+            $transaction += 1;
+        }
+
+        if ($type != "CRDT") {
+            $remarks = "Credit <strong>From</strong>: $username <strong>To</strong>: $account";
+        }
 
         $options = array(
             'username'    => $username,
@@ -19,6 +47,9 @@ class Transaction_model extends CI_Model {
             "transaction" => (int) $transaction,
             "periods"     => (int) $credits,
             "timestamp"   => date("Y-m-d H:i:s"),
+            "coverage_start" => $coverageStart,
+            "coverage_end" => $expires,
+            "remarks" => $remarks
         );
         if (!empty($account)) {
             $options['account'] = $account;
@@ -44,7 +75,6 @@ class Transaction_model extends CI_Model {
         $result = $sql;
         return $result;
     }
-    
 }
 
 /* End of file Transaction_model.php */
