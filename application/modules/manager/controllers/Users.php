@@ -164,6 +164,9 @@ class Users extends ManagerController {
             exit();
         }
 
+        // Before update user_credit_summarize
+        $this->creditsummarize_model->before_update($username);
+
         $this->form_validation->set_rules('validity', 'Validity', 'trim|required|callback_check_validity');
 
         // Param query

@@ -247,7 +247,7 @@ class Users_model extends CI_Model {
             $expiredDateOld = new DateTime($userCredit->start_date);
             $currentDate = new DateTime();
 
-            if ($expiredDateOld < $currentDate) {
+            if ($expiredDateOld > $currentDate) {
                 $this->db->set('start_date', date('Y-m-d H:i:s'));
                 $userCredit->max_credit_recoverable = 0;
             }
@@ -377,8 +377,10 @@ class Users_model extends CI_Model {
                     $dateInterval = $coverageEnd->diff($coverageStart);
                     $totalMonths = 12 * $dateInterval->y + $dateInterval->m;
 
-                    $freeMonth += $totalMonths - $arrayDeductions[$totalMonths] ?? 0;
-
+                    if (isset($arrayDeductions[$totalMonths])) {
+                        $freeMonth += $totalMonths - $arrayDeductions[$totalMonths];
+                    }
+                    
                     // Update subtract free month
                     $this->db->set('is_subtract_free_month', 1);
                     $this->db->where('account', $account)->where('transaction', $transaction->transaction);

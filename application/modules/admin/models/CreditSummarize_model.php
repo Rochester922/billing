@@ -1,7 +1,7 @@
 <?php
 defined('BASEPATH') or exit('No direct script access allowed');
 
-class CreditSummarize_model extends CI_Model
+class Creditsummarize_model extends CI_Model
 {
     protected $table = 'user_credit_summarize';
 
